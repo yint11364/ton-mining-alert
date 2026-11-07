@@ -5,7 +5,8 @@ import urllib.request
 import urllib.parse
 import xml.etree.ElementTree as ET
 from html import unescape
-
+from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 CHAT_ID = os.getenv("TG_CHAT_ID")
 
