@@ -44,6 +44,41 @@ def search_web(query):
     request = urllib.request.Request(
         url, headers={"User-Agent": "Mozilla/5.0"}
     )
+    with urllib.request.urlopen(request, timeout=20) as response:
+        root = ET.fromstring(response.read())
+
+    results = []
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+
+    for item in root.findall(".//item"):
+        title = unescape(item.findtext("title", ""))
+        link = item.findtext("link", "")
+        description = unescape(item.findtext("description", ""))
+        pub_date = item.findtext("pubDate", "")
+
+        try:
+            published = parsedate_to_datetime(pub_date)
+            if published.tzinfo is None:
+                published = published.replace(tzinfo=timezone.utc)
+
+            if published < cutoff:
+                continue
+        except (TypeError, ValueError):
+            continue
+
+        text = (title + " " + description).lower()
+        if "mining" in text and (
+            "ton" in text or "toncoin" in text
+        ):
+            results.append((title, link))
+
+    return results
+    })
+
+    url = "https://news.google.com/rss/search?" + params
+    request = urllib.request.Request(
+        url, headers={"User-Agent": "Mozilla/5.0"}
+    )
 
     with urllib.request.urlopen(request, timeout=20) as response:
         root = ET.fromstring(response.read())
